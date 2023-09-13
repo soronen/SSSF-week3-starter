@@ -5,3 +5,61 @@
 # LocationInput: type, coordinates
 # Query: catById, cats, catsByArea, catsByOwner
 # Mutation: createCat, updateCat, deleteCat
+
+type Cat {
+  id: ID
+  cat_name: String
+  weight: Float
+  birthdate: String
+  owner: String
+  location: Location
+  filename: String
+}
+
+type Location {
+  type: String
+  coordinates: Coordinates
+}
+
+type Coordinates {
+  lat: Float
+  lng: Float
+}
+
+input LocationInput {
+  type: String
+  coordinates: CoordinatesInput
+}
+
+input CoordinatesInput {
+  lat: Float
+  lng: Float
+}
+
+type Query {
+  catById(id: ID): Cat
+  cats: [Cat]
+  catsByArea(lat: Float, lng: Float, radius: Float): [Cat]
+  catsByOwner(owner: String): [Cat]
+}
+
+type Mutation {
+  createCat(
+    cat_name: String
+    weight: Float
+    birthdate: String
+    owner: String
+    location: LocationInput
+    filename: String
+  ): Cat
+  updateCat(
+    id: ID
+    cat_name: String
+    weight: Float
+    birthdate: String
+    owner: String
+    location: LocationInput
+    filename: String
+  ): Cat
+  deleteCat(id: ID): Cat
+}
