@@ -11,6 +11,7 @@
 
 import catModel from '../models/catModel';
 import {Cat} from '../../interfaces/Cat';
+import userModel from '../models/userModel';
 
 export default {
   Query: {
@@ -28,20 +29,30 @@ export default {
     },
   },
   Mutation: {
-    createCat: async (_: undefined, args: {cat: Cat}) => {
-      const cat = new catModel(args.cat);
-      await cat.save();
-      return cat;
+    createCat: async (_: undefined, args: Cat) => {
+      const newCat = new catModel(args);
+
+      // Get owner
+      const owner = await userModel.findById(args.owner);
+      if (!owner) {
+        throw new Error('Owner not found');
+      }
+      newCat.owner = owner;
+      await newCat.save();
+      return newCat;
     },
-    updateCat: async (_: undefined, args: {id: string; cat: Cat}) => {
-      const updatedCat = await catModel.findByIdAndUpdate(args.id, args.cat, {
-        new: true,
-      });
+    updateCat: async (_: undefined, args: Cat) => {
+      const updatedCat = await catModel.findByIdAndUpdate(
+        args.id,
+        {...args},
+        {
+          new: true,
+        }
+      );
       return updatedCat;
     },
-    deleteCat: async (_: undefined, args: {id: string}) => {
-      const deletedCat = await catModel.findByIdAndRemove(args.id);
-      return deletedCat;
+    deleteCat: async (_: undefined, args: Cat) => {
+      return catModel.findOneAndDelete({_id: args.id});
     },
   },
 };

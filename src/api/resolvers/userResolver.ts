@@ -20,15 +20,16 @@ export default {
     },
   },
   Mutation: {
-    createUser: async (_: undefined, args: {user: User}) => {
-      const user = new userModel(args.user);
+    createUser: async (_: undefined, args: User) => {
+      console.log(args);
+      const user = new userModel(args);
       await user.save();
       return user;
     },
-    updateUser: async (_: undefined, args: {id: string; user: User}) => {
+    updateUser: async (_: undefined, args: User) => {
       const updatedUser = await userModel.findByIdAndUpdate(
         args.id,
-        args.user,
+        {...args},
         {
           new: true,
         }

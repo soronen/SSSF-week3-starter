@@ -3,32 +3,37 @@
 // data to send is described in UploadMessageResponse interface
 
 // export {catPost};
-import {Request, Response} from 'express';
-import CatModel from '../models/catModel';
+
+import {Request, Response, NextFunction} from 'express';
+import {Point} from 'geojson';
+import CustomError from '../../classes/CustomError';
 import {Cat} from '../../interfaces/Cat';
 import UploadMessageResponse from '../../interfaces/UploadMessageResponse';
+import catModel from '../models/catModel';
 
-export const catPost = async (req: Request, res: Response) => {
-  const {cat_name, owner, area, location, thumbnail}: any = req.body;
-  if (req.file === undefined) {
-    return res.status(400).json({message: 'No file uploaded'});
+const catPost = async (
+  req: Request,
+  res: Response<{}, {coords: Point}>,
+  next: NextFunction
+) => {
+  try {
+    if (!req.file) {
+      const err = new CustomError('file not valid', 400);
+      throw err;
+    }
+
+    const response: UploadMessageResponse = {
+      message: 'file uploaded',
+      data: {
+        filename: req.file.filename + '_thumb',
+        location: res.locals.coords,
+      },
+    };
+
+    res.json(response);
+  } catch (error) {
+    next(new CustomError((error as Error).message, 400));
   }
-  const {path} = req.file;
-  const newCat = new CatModel({
-    cat_name,
-    owner,
-    area,
-    location,
-    thumbnail,
-    cat_picture: path,
-  });
-  await newCat.save();
-  const message: UploadMessageResponse = {
-    message: 'cat uploaded',
-    data: {
-      filename: path,
-      location: location,
-    },
-  };
-  res.json(message);
 };
+
+export {catPost};
